@@ -1,0 +1,46 @@
+@import "~bootstrap/dist/css/bootstrap.min.css";
+@import "~bootstrap-icons/font/bootstrap-icons.css";
+
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 2rem;
+  background-color: #f4f6f9;
+  color: #333;
+}
+
+h2 {
+  color: #2b6777;
+}
+
+input[type="file"] {
+  margin: 1rem;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #52ab98;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+button:hover {
+  background-color: #3e8e7e;
+}
+
+img.preview {
+  width: 200px;
+  margin: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
+#result {
+  font-size: 1.2rem;
+  margin-top: 2rem;
+  font-weight: bold;
+}

@@ -52,48 +52,41 @@ def match(path1, path2):
     img1 = cv2.imread(path1)
     img2 = cv2.imread(path2)
 
-    # === Normalize before comparison ===
+    # Normalize images (crop, deskew, center)
     gray1 = normalize_signature_image(img1)
     gray2 = normalize_signature_image(img2)
 
-    cv2.imwrite("normalized1.png", gray1)
-    cv2.imwrite("normalized2.png", gray2)
+    # Save for debugging
+    cv2.imwrite("debug_ss/normalized1.png", gray1)
+    cv2.imwrite("debug_ss/normalized2.png", gray2)
 
-# 🔬 SSIM comparison + debug difference image
+    # SSIM similarity
     ssim_score, diff = ssim(gray1, gray2, full=True)
     diff = (diff * 255).astype("uint8")
-    cv2.imwrite("ssim_diff.png", diff)
+    cv2.imwrite("debug_ss/ssim_diff.png", diff)
+    ssim_similarity = float(f"{ssim_score * 100:.2f}")
 
-    # === SSIM Calculation ===
-    similarity = ssim(gray1, gray2) * 100
-    similarity = float(f"{similarity:.2f}")
+    # Early accept: if SSIM very high
+    if ssim_similarity >= 85:
+        return ssim_similarity
 
-    if similarity >= 90:
-        return similarity
-
-    if similarity < 75:
-        return similarity
-
-    # Borderline (75-90), use contour for boosting or penalizing
+    # Preprocess contours
     thresh1 = preprocess_for_contours(img1)
     thresh2 = preprocess_for_contours(img2)
-
     contour1 = extract_largest_contour(thresh1)
     contour2 = extract_largest_contour(thresh2)
 
+    # Default shape score
+    shape_score = 1.0
     if contour1 is not None and contour2 is not None:
         shape_score = cv2.matchShapes(contour1, contour2, cv2.CONTOURS_MATCH_I1, 0.0)
-    print(f"Contour Shape Score: {shape_score}")
+        # print(f"Contour Shape Score: {shape_score}")
 
-    # 🔍 Debugging output
-    cv2.drawContours(img1, [contour1], -1, (0, 255, 0), 2)
-    cv2.drawContours(img2, [contour2], -1, (0, 255, 0), 2)
-    cv2.imwrite("contour1_debug.png", img1)
-    cv2.imwrite("contour2_debug.png", img2)
+    # Boost logic: If SSIM is borderline but contours match well
+    # if 65 <= ssim_similarity < 85:
+    #     if shape_score < 0.1:
+    #         ssim_similarity += 10
+    #     elif shape_score < 0.3:
+    #         ssim_similarity += 5
 
-    # if shape_score < 0.1:
-    #     similarity += 10
-    # elif shape_score > 1.0:
-    #     similarity -= 10
-
-    return float(f"{similarity:.2f}")
+    return float(f"{min(ssim_similarity, 100):.2f}")
